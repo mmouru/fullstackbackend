@@ -1,8 +1,10 @@
 const express = require('express')
 const app = express()
 const morgan = require('morgan')
+const cors = require('cors')
 
 app.use(express.json())
+app.use(cors())
 
 
 morgan.token('post', (req, res) => {
@@ -11,8 +13,7 @@ morgan.token('post', (req, res) => {
 
 app.use(morgan(':method :url :status :res[content-length] :response-time ms :post'))
 
-let users = {
-    "persons":[
+let users = [
       { 
         "name": "Arto Hellas", 
         "number": "040-123456",
@@ -34,7 +35,6 @@ let users = {
         "id": 4
       }
     ]
-  }
 
   app.get('/api/persons', (req, res) => {
     res.json(users)
@@ -42,21 +42,21 @@ let users = {
   })
   
   app.get('/info', (req, res) => {
-    const amount = users.persons.length
+    const amount = users.length
     var today = new Date()
-    res.send(`<p> Phonebook has infor for ${amount} people <br> ${today} </p>`)
+    res.send(`<p> Phonebook has info for ${amount} people <br> ${today} </p>`)
     
-  })
+  })  
 
   app.get('/api/persons/:id', (req, res) => {
       const id = Number(req.params.id)
-      const person = users.persons.find(user => user.id === id)
+      const person = users.find(user => user.id === id)
       res.json(person)
   })
 
   app.delete('/api/persons/:id', (req, res) => {
       const id = Number(req.params.id)
-      users = users.persons.filter(user => user.id !== id)
+      users = users.filter(user => user.id !== id)
 
       res.status(204).end()
   })
@@ -65,13 +65,13 @@ let users = {
     return Math.floor(Math.random() * 1000)
   }
 
-  app.post('/api/persons',  (req, res) => {
+  app.post('/api/persons', (req, res) => {
       if (!req.body.name || !req.body.number) {
           return res.status(400).json({
               error: 'name or number missing'
           })
       }
-      else if (users.persons.some(user => user.name === req.body.name)) {
+      else if (users.some(user => user.name === req.body.name)) {
         return res.status(400).json({ 
           error: 'name already in use' 
         })
@@ -82,8 +82,7 @@ let users = {
           number : req.body.number,
           id: generateId()
       }
-      users = users.persons.concat(newUser)
-      res.json(users)
+      res.json(newUser)
   })
 
   const PORT = 3001
