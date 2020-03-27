@@ -1,11 +1,2 @@
 
-
-
-
-POST http://localhost:3001/api/persons
-Content-Type: application/json
-
-{
-    "name": "Martti Mourujärvi",
-    "number": "050005050050505"
-}
+post http://localhost:3001/api/notes
