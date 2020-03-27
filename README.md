@@ -1,1 +1,1 @@
-http://still-scrubland-74704.herokuapp.com/api/persons
+https://radiant-caverns-30733.herokuapp.com/
