@@ -23,10 +23,10 @@ app.use(morgan(':method :url :status :res[content-length] :response-time ms :pos
   })
   
   app.get('/info', (req, res) => {
-    const amount = users.length
-    var today = new Date()
-    res.send(`<p> Phonebook has info for ${amount} people <br> ${today} </p>`)
-    
+    Person.find({}).then(persons => {
+      var today = new Date()
+      res.send(`<p> Phonebook has info for ${persons.length} people <br> ${today} </p>`)
+    })
   })  
 
   app.get('/api/persons/:id', (req, res, next) => {
@@ -58,10 +58,9 @@ app.use(morgan(':method :url :status :res[content-length] :response-time ms :pos
     .catch(error => next(error))
   })
 
-  app.post('/api/persons', (req, res) => {
+  app.post('/api/persons', (req, res, next) => {
       const body = req.body
-      
-      if (body.name === '' || body.number === '') {
+      if (body.name === undefined || body.number === undefined) {
         return res.status(400).json({ error: 'content missing'})
       }
 
@@ -69,8 +68,14 @@ app.use(morgan(':method :url :status :res[content-length] :response-time ms :pos
         name: body.name,
         number: body.number
       })
-      person.save().then(savedPerson => {
-        res.json(savedPerson.toJSON())
+      person
+      .save()
+      .then(savedPerson => savedPerson.toJSON())
+      .then(savedAndFormattedPerson => {
+        res.json(savedAndFormattedPerson)
+      })
+      .catch(error => {
+        next(error)
       })
   })
 
@@ -85,8 +90,9 @@ app.use(morgan(':method :url :status :res[content-length] :response-time ms :pos
   
     if (error.name === 'CastError' && error.kind == 'ObjectId') {
       return response.status(400).send({ error: 'malformatted id' })
+    }  else if (error.name === 'ValidationError') {
+      return response.status(400).json({ error: error.message })
     }
-  
     next(error)
   }
   
